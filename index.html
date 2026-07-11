@@ -102,6 +102,7 @@
             flex-shrink: 0;
         }
 
+        /* 이미지 왜곡 방지를 위한 컨테이너 및 렌더링 세팅 */
         .image-container {
             width: 100%;
             height: 100%;
@@ -113,7 +114,14 @@
         .image-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 가로세로 비율 유지하며 꽉 채우기 */
+            object-position: center;
+            display: block;
+        }
+
+        /* 이미지 저장(캡처) 시 순간적인 트랜지션 충돌로 인한 찌그러짐 방지 클래스 */
+        .no-transition {
+            transition: none !important;
         }
 
         .placeholder-text {
@@ -281,23 +289,31 @@
             document.getElementById('sourcePreview').style.fontFamily = e.target.value;
         });
 
-        // 🔥 [추가 기능] 화면을 캡처해서 PNG 이미지 파일로 저장하는 함수
+        // 📸 보정된 이미지 캡처 및 저장 함수
         function saveAsImage() {
             const element = document.getElementById('captureArea');
+            const leftPanel = document.getElementById('leftPanel');
             
-            // 이미지 변환 옵션 설정 (스마트폰 크기 대비 화질 저하 방지를 위해 배율을 2배로 설정)
+            // 캡처하는 순간 애니메이션(transition)을 제거하여 타이밍 미스로 인한 왜곡 차단
+            leftPanel.classList.add('no-transition');
+
+            // 이미지 변환 옵션 (화질 향상을 위한 scale 및 왜곡 차단용 width/height 강제 지정)
             const options = {
                 scale: 2, 
-                useCORS: true, // 이미지 파일의 외부 링크 허용 옵션
-                backgroundColor: '#ffffff'
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                width: element.offsetWidth,
+                height: element.offsetHeight
             };
 
             html2canvas(element, options).then(canvas => {
-                // 다운로드용 링크 엘리먼트 생성
                 const link = document.createElement('a');
-                link.download = 'log-quote-' + Date.now() + '.png'; // 저장될 파일 이름
+                link.download = 'log-quote-' + Date.now() + '.png';
                 link.href = canvas.toDataURL('image/png');
-                link.click(); // 강제 클릭으로 다운로드 실행
+                link.click();
+                
+                // 캡처 완료 후 애니메이션 효과 복구
+                leftPanel.classList.remove('no-transition');
             });
         }
     </script>
