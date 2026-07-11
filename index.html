@@ -3,72 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A4 가로형 글/이미지 발췌 생성기</title>
-    <link rel="stylesheet" href="style.css">
+    <title>글로그 발췌 생성기</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/SUIT.css">
+    <style>
+        /* 폰트 설정 */
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap');
+        @font-face {
+            font-family: 'KoPub World Batang';
+            src: url('https://cdn.jsdelivr.net/gh/font-kopubworld/batang/KoPubWorldBatangPM.woff2') format('woff2');
+        }
+
+        /* 기본 UI 스타일 */
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* ────────────────────────────────────────────────────────
+           가변형 캔버스 레이아웃 설정 (높이는 A4 세로 기준 210mm 고정)
+──────────────────────────────────────────────────────── */
+        .canvas-container {
+            height: 210mm;
+            width: max-content; /* 내부 자식 요소들의 폭 합계에 맞게 캔버스 크기가 자동 조절됨 */
+            background-color: #ffffff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            display: flex;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* 왼쪽 사진 영역 (A5 폭은 148.5mm) */
+        .left-panel {
+            height: 100%;
+            width: 148.5mm; /* 기본값: A5 그대로 */
+            background-color: #fafafa;
+            border-right: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: width 0.2s ease; /* 폭 변경 시 부드러운 효과 */
+            flex-shrink: 0;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder-text {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* 오른쪽 글 영역 (A5 규격 고정: 폭 148.5mm, 높이 210mm) */
+        .right-panel {
+            width: 148.5mm;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 28mm 24mm 28mm 24mm; /* 출판물 스타일 여백 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 본문과 하단 출처를 위아래로 분리 */
+            background-color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        /* 본문 스타일 */
+        .content-body {
+            font-family: 'KoPub World Batang', serif;
+            font-size: 11.5pt;
+            line-height: 1.9;
+            color: #222222;
+            text-align: justify;
+            word-break: break-all;
+            white-space: normal;
+        }
+
+        /* 우측 하단 출처 스타일 */
+        .content-source {
+            font-family: 'KoPub World Batang', serif;
+            font-size: 9.5pt;
+            color: #666666;
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        /* ────────────────────────────────────────────────────────
+           인쇄 및 파일 저장 시 설정
+──────────────────────────────────────────────────────── */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .canvas-container {
+                box-shadow: none;
+                margin: 0;
+            }
+            @page {
+                size: auto; /* 변형된 가로 폭에 맞춰 자동으로 인쇄 규격 설정 */
+                margin: 0;
+            }
+        }
+    </style>
 </head>
 <body>
 
     <div class="controls no-print">
-        <h2>A4 가로형 콘텐츠 생성기</h2>
         <div class="control-group">
-            <label>1. 이미지 업로드:</label>
+            <label>1. 왼쪽 사진 폭 선택</label>
+            <select id="widthSelect">
+                <option value="148.5mm">A5 그대로 (148.5mm)</option>
+                <option value="74.25mm">A5의 절반 (74.25mm)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>2. 이미지 업로드</label>
             <input type="file" id="imageInput" accept="image/*">
         </div>
         <div class="control-group">
-            <label>2. 폰트 선택:</label>
+            <label>3. 폰트 선택</label>
             <select id="fontSelect">
-                <option value="'KoPub Batang', serif">KoPub 바탕</option>
-                <option value="'RidiBatang', serif">리디바탕</option>
+                <option value="'KoPub World Batang', serif">KoPub World 바탕</option>
                 <option value="'Nanum Myeongjo', serif">나눔명조</option>
                 <option value="'Pretendard', sans-serif">프리텐다드 (고딕)</option>
             </select>
         </div>
         <div class="control-group">
-            <label>3. 내용 입력 (Markdown 혹은 일반 텍스트):</label>
-            <textarea id="textInput" rows="6" placeholder="우측 A5 영역에 들어갈 글을 입력하세요..."></textarea>
+            <label>4. 본문 내용 입력</label>
+            <textarea id="textInput" rows="5" placeholder="우측 영역에 들어갈 글을 입력하세요..."></textarea>
         </div>
-        <button onclick="window.print()">PDF/이미지로 저장하기 (인쇄)</button>
+        <div class="control-group">
+            <label>5. 출처 / 제목 입력 (우측 하단 표시)</label>
+            <input type="text" id="sourceInput" placeholder="예시: 문학동네, 2026">
+        </div>
+        <button onclick="window.print()">파일로 저장하기 (PDF)</button>
     </div>
 
-    <div class="a4-landscape" id="captureArea">
-        <div class="left-panel">
+    <div class="canvas-container">
+        <div class="left-panel" id="leftPanel">
             <div class="image-container" id="imagePreview">
-                <span class="placeholder-text">이미지가 여기에 표시됩니다</span>
+                <span class="placeholder-text">이미지 영역</span>
             </div>
         </div>
         
         <div class="right-panel">
             <div class="content-body" id="textPreview">
-                여기 입력한 글이 출판물 형태로 렌더링됩니다. 오른쪽 폰트와 여백이 적용된 모습입니다.
+                여기에 본문 내용이 표시됩니다. 상단 입력창에 글을 작성해 주세요.
             </div>
+            <div class="content-source" id="sourcePreview"></div>
         </div>
     </div>
 
     <script>
-        // 이미지 미리보기 기능
+        // 1. 사진 폭 제어 (선택 항목에 따라 left-panel의 폭을 직접 변경)
+        document.getElementById('widthSelect').addEventListener('change', function(e) {
+            document.getElementById('leftPanel').style.width = e.target.value;
+        });
+
+        // 2. 이미지 업로드 및 미리보기
         document.getElementById('imageInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    const container = document.getElementById('imagePreview');
-                    container.innerHTML = `<img src="${event.target.result}" alt="Uploaded Image">`;
+                    document.getElementById('imagePreview').innerHTML = `<img src="${event.target.result}" alt="Uploaded Image">`;
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // 텍스트 실시간 반영 및 줄바꿈 처리
+        // 3. 본문 텍스트 실시간 반영
         document.getElementById('textInput').addEventListener('input', function(e) {
             const text = e.target.value.replace(/\n/g, '<br>');
-            document.getElementById('textPreview').innerHTML = text || '내용을 입력해주세요.';
+            document.getElementById('textPreview').innerHTML = text || '여기에 본문 내용이 표시됩니다.';
         });
 
-        // 폰트 실시간 변경
+        // 4. 출처 텍스트 실시간 반영
+        document.getElementById('sourceInput').addEventListener('input', function(e) {
+            document.getElementById('sourcePreview').innerText = e.target.value;
+        });
+
+        // 5. 폰트 실시간 변경 (본문과 출처 동시 적용)
         document.getElementById('fontSelect').addEventListener('change', function(e) {
             document.getElementById('textPreview').style.fontFamily = e.target.value;
+            document.getElementById('sourcePreview').style.fontFamily = e.target.value;
         });
     </script>
 </body>
