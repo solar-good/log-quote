@@ -1,0 +1,5 @@
+my-image-generator/
+│
+├── index.html        # 전체 레이아웃 및 UI 구성을 담은 파일
+├── style.css         # A4 규격, 여백, 폰트 설정을 담은 스타일시트
+└── README.md         # 사용법 설명

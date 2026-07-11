@@ -1,0 +1,160 @@
+/* 폰트 파일 원격 로드 */
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap');
+@font-face {
+    font-family: 'KoPub Batang';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/KoPubWorldBatang.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'RidiBatang';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RidiBatang.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 기본 UI 스타일 */
+body {
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5;
+    font-family: 'Pretendard', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.controls {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 30px;
+}
+
+.control-group {
+    margin-bottom: 15px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* ────────────────────────────────────────────────────────
+   A4 가로형 레이아웃 핵심 설정 (A4: 297mm x 210mm)
+──────────────────────────────────────────────────────── */
+.a4-landscape {
+    width: 297mm;
+    height: 210mm;
+    background-color: #ffffff;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    display: flex;
+    box-sizing: border-box;
+    overflow: hidden;
+    page-break-after: always;
+}
+
+/* 왼쪽 50% (A5 크기 이미지 영역) */
+.left-panel {
+    width: 50%;
+    height: 100%;
+    background-color: #fafafa;
+    border-right: 1px solid #eaeaea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지가 영역을 꽉 채우도록 설정 (기호에 따라 contain 변환 가능) */
+}
+
+.placeholder-text {
+    color: #aaa;
+    font-size: 14px;
+}
+
+/* 오른쪽 50% (A5 크기 출판물 형태 글 영역) */
+.right-panel {
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+    /* 고급 출판 여백 느낌을 위한 안쪽 여백 세팅 (상하좌우 여유롭게) */
+    padding: 28mm 24mm 24mm 24mm; 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background-color: #ffffff;
+}
+
+/* 본문 스타일링 */
+.content-body {
+    font-family: 'KoPub Batang', serif;
+    font-size: 11.5pt;
+    line-height: 1.85;       /* 행간을 넓혀 출판물 가독성 확보 */
+    color: #222222;
+    text-align: justify;     /* 양끝 정렬로 책 같은 느낌 부여 */
+    word-break: break-all;
+    white-space: normal;
+}
+
+/* ────────────────────────────────────────────────────────
+   인쇄 및 PDF 저장 시 컨트롤러 숨김 처리
+──────────────────────────────────────────────────────── */
+@media print {
+    body {
+        background: none;
+        padding: 0;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .a4-landscape {
+        box-shadow: none;
+        margin: 0;
+        width: 297mm;
+        height: 210mm;
+    }
+    @page {
+        size: A4 landscape;
+        margin: 0;
+    }
+}

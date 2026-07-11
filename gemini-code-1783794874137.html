@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A4 가로형 글/이미지 발췌 생성기</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/SUIT.css">
+</head>
+<body>
+
+    <div class="controls no-print">
+        <h2>A4 가로형 콘텐츠 생성기</h2>
+        <div class="control-group">
+            <label>1. 이미지 업로드:</label>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+        <div class="control-group">
+            <label>2. 폰트 선택:</label>
+            <select id="fontSelect">
+                <option value="'KoPub Batang', serif">KoPub 바탕</option>
+                <option value="'RidiBatang', serif">리디바탕</option>
+                <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                <option value="'Pretendard', sans-serif">프리텐다드 (고딕)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>3. 내용 입력 (Markdown 혹은 일반 텍스트):</label>
+            <textarea id="textInput" rows="6" placeholder="우측 A5 영역에 들어갈 글을 입력하세요..."></textarea>
+        </div>
+        <button onclick="window.print()">PDF/이미지로 저장하기 (인쇄)</button>
+    </div>
+
+    <div class="a4-landscape" id="captureArea">
+        <div class="left-panel">
+            <div class="image-container" id="imagePreview">
+                <span class="placeholder-text">이미지가 여기에 표시됩니다</span>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="content-body" id="textPreview">
+                여기 입력한 글이 출판물 형태로 렌더링됩니다. 오른쪽 폰트와 여백이 적용된 모습입니다.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 이미지 미리보기 기능
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const container = document.getElementById('imagePreview');
+                    container.innerHTML = `<img src="${event.target.result}" alt="Uploaded Image">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 텍스트 실시간 반영 및 줄바꿈 처리
+        document.getElementById('textInput').addEventListener('input', function(e) {
+            const text = e.target.value.replace(/\n/g, '<br>');
+            document.getElementById('textPreview').innerHTML = text || '내용을 입력해주세요.';
+        });
+
+        // 폰트 실시간 변경
+        document.getElementById('fontSelect').addEventListener('change', function(e) {
+            document.getElementById('textPreview').style.fontFamily = e.target.value;
+        });
+    </script>
+</body>
+</html>
